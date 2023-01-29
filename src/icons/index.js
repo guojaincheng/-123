@@ -7,3 +7,4 @@ Vue.component('svg-icon', SvgIcon)
 const req = require.context('./svg', false, /\.svg$/)
 const requireAll = requireContext => requireContext.keys().map(requireContext)
 requireAll(req)
+// 以上代码是把svg图片引入项目中
