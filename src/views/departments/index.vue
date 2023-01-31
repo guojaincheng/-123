@@ -7,16 +7,22 @@
         <!-- 缺少treeNode -->
         <tree-tools :tree-node="company" :is-root="true" @addDepts="addDepts" />
         <!--放置一个属性   这里的props和我们之前学习的父传子 的props没关系-->
-        <el-tree :data="departs" :props="delf" default-expand-all="true">
+        <el-tree :data="departs" :props="delf" :default-expand-all="true">
           <!-- 说明el-tree里面的这个内容 就是插槽内容 => 填坑内容  => 有多少个节点循环多少次 -->
           <!-- scope-scope 是 tree组件传给每个节点的插槽的内容的数据 -->
           <!-- 顺序一定是 执行slot-scope的赋值 才去执行 props的传值 -->
-          <tree-tools slot-scope="{ data }" :tree-node="data" @addDepts="addDepts" @delDepts="getDepartments" />
+          <tree-tools
+            slot-scope="{ data }"
+            :tree-node="data"
+            @addDepts="addDepts"
+            @delDepts="getDepartments"
+            @editDepts="editDepts"
+          />
         </el-tree>
       </el-card>
     </div>
     <!-- 放置弹出框样式 进行观察 -->
-    <AddDept :show-dialog="showDialog" :tree-node="node" />
+    <AddDept ref="addDept" :show-dialog.sync="showDialog" :tree-node="node" @addDepts="getDepartments" />
   </div>
 </template>
 <script>
@@ -33,10 +39,7 @@ export default {
   data() {
     return {
       // 注册组件
-      company: { // 头部数据
-        name: '',
-        manager: ''
-      },
+      company: {},
       delf: {
         label: 'name',
         children: 'children'
@@ -55,7 +58,7 @@ export default {
   methods: {
     async getDepartments() { // 常用的数据方法 需要单独封装
       const result = await getDepartments()
-      this.company = { name: result.companyName, manager: '负责人' }
+      this.company = { name: result.companyName, manager: '负责人', id: '' }
       // 这里定义一个空串  因为 它是根 所有的子节点的数据pid 都是 ""
       this.departs = transListToTreeData(result.depts, '')
     },
@@ -64,6 +67,13 @@ export default {
       this.showDialog = true // 显示弹层
       // 因为node是当前的点击的部门， 此时这个部门应该记录下来,
       this.node = node
+    },
+    editDepts(node) {
+      this.showDialog = true // 显示新增组件弹层
+      this.node = node // 存储传递过来的node数据
+      // 我们需要在这个位置 调用子组件的方法
+      // 父组件 调用子组件的方法
+      this.$refs.addDept.getDepartDetail(node.id) // 直接调用子组件中的方法 传入一个id
     }
   }
 }
