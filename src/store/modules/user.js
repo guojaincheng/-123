@@ -1,66 +1,61 @@
 import { getToken, setToken, removeToken, setTimeStamp } from '@/utils/auth'
 import { login, getUserInfo, getUserDetailById } from '@/api/user'
 import { resetRouter } from '@/router'
+// 状态
 const state = {
-  token: getToken(), // 设置token为共享
-  userInfo: {} // 这里为什么不写null ?
+  token: getToken(), // 设置token为共享状态 初始化vuex的时候 就先从缓存中读取
+  userInfo: {} // 这里定义一个空对象 为什么要定义空对象
 }
 const mutations = {
-  // 设置token的mutations
   setToken(state, token) {
-    state.token = token // 只是设置了vuex中的数据
-    // 需要将vuex中的数据同步到缓存
+    state.token = token // 将数据设置给vuex
+    // 同步给缓存
     setToken(token)
   },
   removeToken(state) {
-    state.token = null // 设置vuex中的token为null
-    removeToken() // 同步删除缓存中的token
+    state.token = null // 将vuex的数据置空
+    removeToken() // 同步到缓存
   },
-  setUserInfo(state, userInfo) {
-    state.userInfo = userInfo
-    // state.userInfo = { ...userInfo } // 浅拷贝 如果要去改属性里面的某一个值 可以用浅拷贝的方式
+  setUserInfo(state, result) {
+    // 更新一个对象
+    state.userInfo = result // 这样是响应式
+    // state.userInfo = { ...result } // 这样也是响应式 属于浅拷贝
+    // state.userInfo['username'] = result // 这样才不是响应式
   },
-  removeUserInfo(state) {
-    state.userInfo = {} // 重置为空对象
+  removeUseInfo(state) {
+    state.userInfo = {}
   }
 }
 const actions = {
-  // 封装一个登录的action
-  // data认为是 { mobile,password }
-  // 只要用async标记了函数 那么这个函数本身就是promise对象
   async login(context, data) {
-    // 调用登录接口
-    // login(data).then(result => {
-
-    // })
-    // await下方永远都是 reslove成功执行的逻辑
-    const result = await login(data)
-    // result就是token
-    context.commit('setToken', result)
-
-    setTimeStamp() // 设置时间戳
+    // 调用api接口
+    const result = await login(data) // 拿到token
+    context.commit('setToken', result) // 设置token
+    // 拿到token说明登录成功
+    setTimeStamp() // 设置当前的时间戳
   },
-  // 获取用户资料
   async getUserInfo(context) {
     const result = await getUserInfo()
-    // 此时result里面已经有userId
-    const baseInfo = await getUserDetailById(result.userId) // 用户的基本信息
-    context.commit('setUserInfo', { ...result, ...baseInfo }) // 修改state中的用户资料
-    return result // 这里这句话 是伏笔 当下是用不上的 但是后期会用上 敬请期待
+    // 获取用户的详情 用户的详情数据
+    const baseInfo = await getUserDetailById(result.userId)
+    context.commit('setUserInfo', { ...result, ...baseInfo }) // 提交到mutations
+    return result // 这里为什么要return呢 这里是给我们后期做权限的时候 留下的伏笔
   },
-  // 登出action
-  logout({ commit }) {
+  // 登出操作
+  logout(context) {
     // 删除token
-    commit('removeToken')
+    context.commit('removeToken')
     // 删除用户资料
-    commit('removeUserInfo')
+    context.commit('removeUseInfo')
     // 重置路由
-    resetRouter()
-    // 清空路由模块下的路由信息
-    // Vuex子模块 调用子模块的mutation
-    commit('permission/setRoutes', [], { root: true }) // commit默认是提交的当前子模块的mutations
-    // 如果加上 root: true 就表示commit此时是根级的commit
-    // this.$store.commit('permission/setRoutes')
+    resetRouter() // 重置路由
+    // 去设置权限模块下路由为初始状态
+    // Vuex子模块怎么调用子模块的action 都没加锁的情况下 可以随意调用
+    // 不加命名空间的情况下的 所有的mutations和action都是挂在全局上的 所以可以直接调用
+    // 但是加了命名空间的子模块 怎么调用另一个加了命名空间的子模块的mutations
+    // 加了命名空间的context指的不是全局的context
+    // mutations名称 载荷 payload 第三个参数  { root: true } 调用根级的mutations或者action
+    context.commit('permission/setRoutes', [], { root: true })
   }
 }
 export default {

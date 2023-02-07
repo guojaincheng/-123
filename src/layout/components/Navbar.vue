@@ -3,14 +3,20 @@
     <hamburger :is-active="sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar" />
     <div class="app-breadcrumb">
       江苏传智播客教育科技股份有限公司
-      <span class="breadBtn">进阶版</span>
+      <span class="breadBtn">体验版</span>
     </div>
     <!-- <breadcrumb class="breadcrumb-container" /> -->
 
     <div class="right-menu">
+      <!-- 放置多语言插件 -->
+      <lang-select class="right-menu-item" />
+      <!-- 放置全局插件 -->
+      <screen-full class="right-menu-item" />
+      <!-- 放置切换主题组件 -->
+      <theme-picker class="right-menu-item" />
       <el-dropdown class="avatar-container" trigger="click">
         <div class="avatar-wrapper">
-          <img v-imageerror="defaultImg" :src="staffPhoto" class="user-avatar">
+          <img v-imagerror="defaultImg" :src="staffPhoto" class="user-avatar">
           <span class="name">{{ name }}</span>
           <i class="el-icon-caret-bottom" />
         </div>
@@ -20,7 +26,7 @@
               首页
             </el-dropdown-item>
           </router-link>
-          <a target="_blank" href="https://github.com/guojaincheng/-vue">
+          <a target="_blank" href="https://gitee.com/shuiruohanyu/hrsaas106">
             <el-dropdown-item>项目地址</el-dropdown-item>
           </a>
           <el-dropdown-item divided @click.native="logout">
@@ -34,7 +40,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
-
+// const { mapActions } = createNamespacedHelpers('user')
 import Hamburger from '@/components/Hamburger'
 
 export default {
@@ -44,7 +50,6 @@ export default {
   data() {
     return {
       defaultImg: require('@/assets/common/head.jpg')
-
     }
   },
   computed: {
@@ -55,13 +60,14 @@ export default {
     ])
   },
   methods: {
+    // ...mapActions(['lgout']),
     toggleSideBar() {
       this.$store.dispatch('app/toggleSideBar')
     },
     async logout() {
-      await this.$store.dispatch('user/logout')
-      // 必须等到清除完token 才去 跳转
-      this.$router.push(`/login`)
+      // this.lgout()
+      await this.$store.dispatch('user/logout') // 这里不论写不写 await 登出方法都是同步的
+      this.$router.push(`/login`) // 跳到登录
     }
   }
 }
@@ -72,8 +78,7 @@ export default {
   height: 50px;
   overflow: hidden;
   position: relative;
-  background: #fff;
-  background-image: -webkit-linear-gradient(left, #3d6df8, #5b8cff);
+ background-image: -webkit-linear-gradient(left, #3d6df8, #5b8cff);  box-shadow: 0 1px 4px rgba(0,21,41,.08);
 
   .hamburger-container {
     line-height: 46px;
@@ -81,35 +86,32 @@ export default {
     float: left;
     cursor: pointer;
     transition: background .3s;
-    -webkit-tap-highlight-color: transparent;
+    -webkit-tap-highlight-color:transparent;
 
     &:hover {
       background: rgba(0, 0, 0, .025)
     }
   }
-
+  .app-breadcrumb {
+  display: inline-block;
+  font-size: 18px;
+  line-height: 50px;
+  margin-left: 10px;
+  color: #ffffff;
+  cursor: text;
+  .breadBtn {
+    background: #84a9fe;
+    font-size: 14px;
+    padding: 0 10px;
+    display: inline-block;
+    height: 30px;
+    line-height: 30px;
+    border-radius: 10px;
+    margin-left: 15px;
+  }
+}
   .breadcrumb-container {
     float: left;
-  }
-
-  .app-breadcrumb {
-    display: inline-block;
-    font-size: 18px;
-    line-height: 50px;
-    margin-left: 10px;
-    color: #ffffff;
-    cursor: text;
-
-    .breadBtn {
-      background: #84a9fe;
-      font-size: 14px;
-      padding: 0 10px;
-      display: inline-block;
-      height: 30px;
-      line-height: 30px;
-      border-radius: 10px;
-      margin-left: 15px;
-    }
   }
 
   .right-menu {
@@ -121,15 +123,11 @@ export default {
       outline: none;
     }
 
-    .name {
-      color: #fff;
-      vertical-align: middle;
-      margin-left: 5px;
-    }
-
-    .user-dropdown {
-      color: #fff;
-    }
+   .name {
+          color: #fff;
+          vertical-align: middle;
+          margin-left:5px;
+   }
 
     .right-menu-item {
       display: inline-block;
@@ -137,7 +135,7 @@ export default {
       height: 100%;
       font-size: 18px;
       color: #5a5e66;
-      vertical-align: text-bottom;
+      vertical-align: middle;
 
       &.hover-effect {
         cursor: pointer;
@@ -155,24 +153,26 @@ export default {
       .avatar-wrapper {
         margin-top: 5px;
         position: relative;
-      }
 
       .user-avatar {
-        cursor: pointer;
-        width: 30px;
-        height: 30px;
-        border-radius: 15px;
-        vertical-align: middle;
+          cursor: pointer;
+          width: 30px;
+          height: 30px;
+          border-radius: 15px;
+          vertical-align: middle;
 
-      }
-
-      .el-icon-caret-bottom {
-        cursor: pointer;
-        position: absolute;
-        right: -20px;
-        top: 25px;
-        font-size: 12px;
-        color: #fff;
+   }
+      .user-dropdown {
+           color: #fff;
+    }
+        .el-icon-caret-bottom {
+          cursor: pointer;
+          position: absolute;
+          right: -20px;
+          top: 25px;
+          font-size: 12px;
+          color: #fff;
+        }
       }
     }
   }

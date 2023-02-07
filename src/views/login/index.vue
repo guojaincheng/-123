@@ -16,6 +16,7 @@
           ref="username"
           v-model="loginForm.mobile"
           placeholder="请输入手机号"
+          name="username"
           type="text"
           tabindex="1"
           auto-complete="on"
@@ -26,6 +27,12 @@
         <span class="svg-container">
           <svg-icon icon-class="password" />
         </span>
+        <!--
+          <div>
+            <input />
+          </div>
+
+         -->
         <el-input
           :key="passwordType"
           ref="password"
@@ -37,24 +44,18 @@
           auto-complete="on"
           @keyup.enter.native="handleLogin"
         />
+        <!-- enter是按键的修饰符  native也是修饰符 -->
         <span class="show-pwd" @click="showPwd">
           <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
         </span>
       </el-form-item>
 
-      <el-button
-        class="loginBtn"
-        :loading="loading"
-        type="primary"
-        style="width:100%;margin-bottom:30px;"
-        @click.native.prevent="handleLogin"
-      >登录</el-button>
+      <el-button class="loginBtn" :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">登录</el-button>
 
       <div class="tips">
         <span style="margin-right:20px;">账号: 13800000002</span>
         <span> 密码: 123456</span>
       </div>
-
     </el-form>
   </div>
 </template>
@@ -66,28 +67,28 @@ export default {
   name: 'Login',
   data() {
     const validateMobile = (rule, value, callback) => {
-      // value是否符合手机号格式
+      // 校验成功 callback()
+      // 校验失败 callback(new Error("错误信息"))
+      // if (!validMobile(value)) {
+      //   callback(new Error('手机号不正确'))
+      // } else {
+      //   callback()
+      // }
       validMobile(value) ? callback() : callback(new Error('手机号格式不正确'))
     }
-    // validator 自定义校验函数
-    // 可以自主的校验函数
-    // function (rule, value, callback) {}
-    // value => callback  callback(new Error())
-
     return {
       loginForm: {
         mobile: '13800000002',
         password: '123456'
       },
       loginRules: {
-        mobile: [{ required: true, trigger: 'blur', message: '请输入手机号' }, {
-          trigger: 'blur',
-          validator: validateMobile// 校验手机号
+        // trigger 校验的触发方式 blur/change
+        // 自定义函数
+        mobile: [{ required: true, trigger: 'blur', message: '手机号不能为空' }, {
+          validator: validateMobile, trigger: 'blur'
         }],
-        // 校验规则
-        // min   max  校验的字符串 指的是长度 校验的是数字 校验的大小
-        password: [{ required: true, trigger: 'blur', message: '请输入密码' }, {
-          min: 6, max: 16, message: '密码长度在6-16位之间', trigger: 'blur'
+        password: [{ required: true, trigger: 'blur', message: '密码不能为空' }, {
+          trigger: 'blur', min: 6, max: 16, message: '密码长度为6-16位之间'
         }]
       },
       loading: false,
@@ -104,7 +105,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions(['user/login']),
+    ...mapActions(['user/login']), // 引入方法
     showPwd() {
       if (this.passwordType === 'password') {
         this.passwordType = ''
@@ -115,24 +116,28 @@ export default {
         this.$refs.password.focus()
       })
     },
-    // 登录
     handleLogin() {
+      // 表单的手动校验
       this.$refs.loginForm.validate(async isOK => {
         if (isOK) {
-          // 表示校验通过
-          this.loading = true
           try {
+            this.loading = true
+            // 只有校验通过了 我们才去调用action
             await this['user/login'](this.loginForm)
-            // 只要进行到这个位置 说明登录成功了 跳到主页
+            // 应该登录成功之后
+            // async标记的函数实际上一个promise对象
+            // await下面的代码 都是成功执行的代码
             this.$router.push('/')
           } catch (error) {
-            //
+            console.log(error)
           } finally {
-            // finally是和trycatch配套的 不论你执行不执行catch都会执行finally
+            //  不论执行try 还是catch  都去关闭转圈
             this.loading = false
           }
         }
       })
+      // ref 可以获取一个元素的dom对象
+      // ref作用到组件的上的时候 可以获取该组件的实例  this
     }
   }
 }
@@ -143,7 +148,7 @@ export default {
 /* Detail see https://github.com/PanJiaChen/vue-element-admin/pull/927 */
 
 $bg:#283443;
-$light_gray: #68b0fe;
+$light_gray: #68b0fe;  // 将输入框颜色改成蓝色
 $cursor: #fff;
 
 @supports (-webkit-mask: none) and (not (cater-color: $cursor)) {
@@ -154,8 +159,8 @@ $cursor: #fff;
 
 /* reset element-ui css */
 .login-container {
-  background-image: url('~@/assets/common/login.jpg');
-  background-position: center;
+   background-image: url('~@/assets/common/login.jpg');
+   background-position: center;
   .el-input {
     display: inline-block;
     height: 47px;
@@ -184,7 +189,7 @@ $cursor: #fff;
     border-radius: 5px;
     color: #454545;
   }
-   .el-form-item__error {
+ .el-form-item__error {
     color: #fff
   }
   .loginBtn {
@@ -193,7 +198,6 @@ $cursor: #fff;
   line-height: 32px;
   font-size: 24px;
 }
-
 }
 </style>
 

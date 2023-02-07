@@ -37,13 +37,7 @@
         </el-form-item>
         <el-form-item label="HRBP">
           <el-select v-model="formData.hrbp" filterable placeholder="请选择" class="inputW">
-            <el-option
-              v-for="item in depts"
-              :key="item.id"
-              :label="item.username"
-              :value="item.id"
-              class="inputW"
-            />
+            <el-option v-for="item in depts" :key="item.id" :label="item.username" :value="item.id" class="inputW" />
           </el-select>
         </el-form-item>
         <el-form-item class="formInfo" label="调整司龄(天)：">
@@ -58,12 +52,7 @@
           />
         </el-form-item>
         <el-form-item label="调整工龄">
-          <el-input
-            v-model="formData.adjustmentOfLengthOfService"
-            placeholder="0.00年"
-            class="inputW"
-            disabled
-          />
+          <el-input v-model="formData.adjustmentOfLengthOfService" placeholder="0.00年" class="inputW" disabled />
         </el-form-item>
       </div>
       <!-- 合同信息 -->
@@ -95,7 +84,7 @@
         </el-form-item>
         <el-form-item label="现合同结束时间">
           <el-date-picker
-            v-model="formData.closingTimeOfCurrentContract"
+            v-model="formData.closingTimeOfCurrentContract	"
             type="date"
             placeholder="选择日期"
             value-format="yyyy-MM-dd"
@@ -156,11 +145,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="推荐企业/人">
-          <el-input
-            v-model="formData.recommenderBusinessPeople"
-            placeholder="请输入"
-            class="infoPosition inputW"
-          />
+          <el-input v-model="formData.recommenderBusinessPeople" placeholder="请输入" class="infoPosition inputW" />
         </el-form-item>
       </div>
       <!-- 从业信息 -->
@@ -175,7 +160,7 @@
 
 <script>
 import EmployeeEnum from '@/api/constant/employees'
-import { getEmployeeSimple, updateJob, getJobDetail } from '@/api/employees'
+import { getJobDetail, getEmployeeSimple, updateJob } from '@/api/employees'
 export default {
   data() {
     return {
@@ -220,11 +205,9 @@ export default {
     async getJobDetail() {
       this.formData = await getJobDetail(this.userId)
     },
-    // 获取员工列表
-    async getEmployeeSimple() {
+    async  getEmployeeSimple() {
       this.depts = await getEmployeeSimple()
     },
-    // 保存岗位信息
     async saveJob() {
       await updateJob(this.formData)
       this.$message.success('保存岗位信息成功')

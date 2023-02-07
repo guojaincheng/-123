@@ -1,16 +1,56 @@
-// 导出员工的路由
+
 import Layout from '@/layout'
-export default {
-  // 路由规则
-  path: '/salarys', // 路由地址
-  name: 'salarys ',
+
+const salaryRouter = {
+  path: '/salarys',
   component: Layout,
-  children: [{
-    path: '', // 这里不需要写  代表二级默认的路由
-    component: () => import('@/views/salarys'),
-    meta: {
-      title: '工资',
-      icon: 'money' // 这里是在左侧菜单栏上显示的数据
+  name: 'salarys',
+  children: [
+    {
+      path: '',
+      component: () => import('@/views/salarys'),
+      name: 'salarys',
+      meta: {
+        title: '工资',
+        icon: 'money'
+      }
+    },
+    {
+      path: 'setting',
+      component: () => import('@/views/salarys/setting'),
+      name: 'salarysSetting',
+      hidden: true,
+      meta: {
+        title: '设置'
+      }
+    },
+    {
+      path: 'details/:yearMonth/:id',
+      component: () => import('@/views/salarys/detail'),
+      name: 'salarysDetails',
+      hidden: true,
+      meta: {
+        title: '详情'
+      }
+    },
+    {
+      path: 'historicalArchiving',
+      component: () => import('@/views/salarys/historical'),
+      name: 'salarysHistorical',
+      hidden: true,
+      meta: {
+        title: '历史归档'
+      }
+    },
+    {
+      path: 'monthStatement',
+      component: () => import('@/views/salarys/month'),
+      name: 'salarysMonthStatement',
+      hidden: true,
+      meta: {
+        title: '月报表'
+      }
     }
-  }]
+  ]
 }
+export default salaryRouter

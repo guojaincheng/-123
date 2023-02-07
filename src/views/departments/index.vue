@@ -1,88 +1,76 @@
 <template>
-  <div class="dashboard-container">
+  <div v-loading="loading" class="dashboard-container">
     <div class="app-container">
-      <!-- 实现页面的基本布局 -->
+      <!-- 组织架构内容- 头部 -->
       <el-card class="tree-card">
-        <!-- 用了一个行列布局 -->
-        <!-- 缺少treeNode -->
+        <!-- 放置结构内容 -->
         <tree-tools :tree-node="company" :is-root="true" @addDepts="addDepts" />
-        <!--放置一个属性   这里的props和我们之前学习的父传子 的props没关系-->
-        <el-tree :data="departs" :props="delf" :default-expand-all="true">
-          <!-- 说明el-tree里面的这个内容 就是插槽内容 => 填坑内容  => 有多少个节点循环多少次 -->
-          <!-- scope-scope 是 tree组件传给每个节点的插槽的内容的数据 -->
-          <!-- 顺序一定是 执行slot-scope的赋值 才去执行 props的传值 -->
-          <tree-tools
-            slot-scope="{ data }"
-            :tree-node="data"
-            @addDepts="addDepts"
-            @delDepts="getDepartments"
-            @editDepts="editDepts"
-          />
+        <!-- 放置一个el-tree -->
+        <el-tree :data="departs" :props="defaultProps" :default-expand-all="true">
+          <!-- 传入内容 插槽内容 会循环多次 有多少节点 就循环多少次 -->
+          <!-- 作用域插槽 slot-scope="obj" 接收传递给插槽的数据   data 每个节点的数据对象-->
+          <tree-tools slot-scope="{ data }" :tree-node="data" @addDepts="addDepts" @editDepts="editDepts" @delDepts="getDepartments" />
         </el-tree>
       </el-card>
     </div>
-    <!-- 放置弹出框样式 进行观察 -->
-    <AddDept ref="addDept" :show-dialog.sync="showDialog" :tree-node="node" @addDepts="getDepartments" />
+    <!-- 放置新增弹层组件 -->
+    <add-dept ref="addDept" :show-dialog.sync="showDialog" :tree-node="node" @addDepts="getDepartments" />
   </div>
 </template>
+
 <script>
-// 引入组件
-import TreeTools from './components/tuee-tools.vue'
-import { getDepartments } from '@/api/departments'
-import { transListToTreeData } from '@/utils/index'
+import TreeTools from './components/tree-tools'
 import AddDept from './components/add-dept'
+
+import { getDepartments } from '@/api/departments'
+import { tranListToTreeData } from '@/utils'
 export default {
   components: {
-    // eslint-disable-next-line vue/no-unused-components
     TreeTools, AddDept
   },
   data() {
     return {
-      // 注册组件
-      company: {},
-      delf: {
-        label: 'name',
-        children: 'children'
-      },
+      company: { }, // 就是头部的数据结构
       departs: [],
-      // 树形结构数据
-      showDialog: false,
-      // 默认不显示
-      node: null
-      // 添加到那个部门
+      defaultProps: {
+        label: 'name' // 表示 从这个属性显示内容
+      },
+      showDialog: false, // 默认不显示弹层
+      node: null, // 记录当前点击的node节点
+      loading: false // 当前的控制显示弹层
     }
   },
   created() {
-    this.getDepartments()// 调用自己的方法
+    this.getDepartments() // 调用自身的方法
   },
   methods: {
-    async getDepartments() { // 常用的数据方法 需要单独封装
+    async getDepartments() {
+      this.loading = true
       const result = await getDepartments()
       this.company = { name: result.companyName, manager: '负责人', id: '' }
-      // 这里定义一个空串  因为 它是根 所有的子节点的数据pid 都是 ""
-      this.departs = transListToTreeData(result.depts, '')
+      this.departs = tranListToTreeData(result.depts, '') // 需要将其转化成树形结构
+      console.log(result)
+      this.loading = false
     },
-    // 监听数据  是否显示弹出
+    // 监听tree-tools中触发的点击添加子部门的事件
+    // node 是我们点击的部门
     addDepts(node) {
       this.showDialog = true // 显示弹层
-      // 因为node是当前的点击的部门， 此时这个部门应该记录下来,
       this.node = node
     },
     editDepts(node) {
-      this.showDialog = true // 显示新增组件弹层
-      this.node = node // 存储传递过来的node数据
-      // 我们需要在这个位置 调用子组件的方法
-      // 父组件 调用子组件的方法
-      this.$refs.addDept.getDepartDetail(node.id) // 直接调用子组件中的方法 传入一个id
+      this.showDialog = true // 弹出层
+      this.node = node
+      // 应该在这里调用获取部门详情的方法
+      this.$refs.addDept.getDepartDetail(node.id)
     }
   }
 }
-
 </script>
 
 <style scoped>
-.tree-card {
-  padding: 30px 140px;
-  font-size: 14px;
-}
+ .tree-card {
+  padding: 30px  140px;
+  font-size:14px;
+ }
 </style>
